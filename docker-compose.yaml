@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: runik_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: runik_dashboard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/vat/lib/postgresql/data
+    networks:
+      - runik_network
+
+volumes:
+  postgres_data:
+
+networks:
+  runik_network:
+    driver: bridge
