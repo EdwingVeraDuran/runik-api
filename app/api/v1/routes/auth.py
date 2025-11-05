@@ -5,7 +5,7 @@ from datetime import timedelta
 from app.models.user import User
 from app.schemas.user import UserCreate, UserLogin, UserOut, UserToken
 from app.core.database import get_db
-from app.core.security import get_password_hash, verify_password, create_acces_token
+from app.core.security import get_password_hash, verify_password, create_access_token
 from app.core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -38,6 +38,6 @@ async def login(user_in: UserLogin, db:AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Icorrect credentials")
     
     acces_token_expire = timedelta(minutes=settings.ACCES_TOKEN_EXPIRE_MINUTES)
-    token = create_acces_token(data={"sub": user.email}, expires_delta=acces_token_expire)
+    token = create_access_token(data={"sub": user.email}, expires_delta=acces_token_expire)
     
     return {"access_token": token, "token_type": "bearer"}
