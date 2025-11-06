@@ -1,0 +1,17 @@
+[project]
+name = "runik-api"
+version = "0.1.0"
+description = "runik rest api"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "alembic>=1.17.1",
+    "fastapi>=0.121.0",
+    "psycopg2-binary>=2.9.11",
+    "pydantic[email]>=2.12.4",
+    "pydantic-settings>=2.11.0",
+    "sqlalchemy>=2.0.44",
+    "uvicorn>=0.38.0",
+    "passlib>=1.7.4",
+    "python-jose>=3.5.0",
+]

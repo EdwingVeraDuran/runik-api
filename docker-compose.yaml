@@ -1,0 +1,29 @@
+services:
+  app:
+    container_name: runik-api
+    build:
+      context: .
+      dockerfile: DockerFile
+    depends_on:
+      - db
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+  db:
+    image: postgres
+    container_name: postgres_d_compose
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: runik_dashboard
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql
+
+volumes:
+  db:
+    driver: local
