@@ -1,10 +1,21 @@
-version: "3.9"
-
 services:
-  postgres:
-    image: postgres:16
-    container_name: runik_postgres
-    restart: always
+  api:
+    container_name: runik-api
+    build:
+      context: .
+      dockerfile: DockerFile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - ./app:/app/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+  db:
+    image: postgres
+    container_name: runik_pg_db
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
@@ -12,13 +23,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/vat/lib/postgresql/data
-    networks:
-      - runik_network
+      - postgres_data:/var/lib/postgresql
 
 volumes:
   postgres_data:
-
-networks:
-  runik_network:
-    driver: bridge
