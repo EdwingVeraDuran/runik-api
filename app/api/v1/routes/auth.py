@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy.future import select
 from datetime import timedelta
 from app.models.user import User
@@ -8,39 +9,34 @@ from app.schemas.user import UserCreate, UserLogin, UserOut, UserToken
 from app.core.database import get_db
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.core.config import settings
+from jose import JWTError, jwt
+
+from app.services.user_service import UserService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+
+def get_user_service(db: Session = Depends(get_db)) -> UserService:
+    return UserService(session=db)
+
+
 # --- Register ---
 @router.post("/register", response_model=UserOut)
-async def register_user(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
-    email_result = await db.execute(select(User).where(User.email == user_in.email))
-    username_result = await db.execute(select(User).where(User.username == user_in.username))
-    existing_email = email_result.scalar_one_or_none()
-    existing_username = username_result.scalar_one_or_none()
-    if existing_email or existing_username:
-        raise HTTPException(status_code=400, detail="Email or username is already registered.")
-    
-    hashed_pw = get_password_hash(user_in.password)
-    new_user = User(username=user_in.username, email=user_in.email, hashed_password=hashed_pw)
-    db.add(new_user)
-    try:
-        await db.commit()
-    except IntegrityError:
-        await db.rollback()
-        raise HTTPException(status_code=400, detail="Email or username already registered.")
-    await db.refresh(new_user)
-    return new_user
+def register_user(
+    user_in: UserCreate, service: UserService = Depends(get_user_service)
+):
+    response = service.register_user(
+        username=user_in.username, email=user_in.email, password=user_in.password
+    )
+
+    if response is HTTPException:
+        raise response
+
+    return response
+
 
 # --- Login ---
 @router.post("/login", response_model=UserToken)
-async def login(user_in: UserLogin, db:AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == user_in.email))
-    user = result.scalar_one_or_none()
-    if not user or not verify_password(user_in.password, user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect credentials")
-    
-    acces_token_expire = timedelta(minutes=settings.ACCES_TOKEN_EXPIRE_MINUTES)
-    token = create_access_token(data={"sub": user.email}, expires_delta=acces_token_expire)
-    
-    return {"access_token": token, "token_type": "bearer"}
+async def login(
+    user_in: UserLogin, service: UserService = Depends(get_user_service)
+): ...
