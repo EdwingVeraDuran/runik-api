@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import timedelta
@@ -27,7 +28,8 @@ async def register_user(user_in: UserCreate, db: AsyncSession = Depends(get_db))
     db.add(new_user)
     try:
         await db.commit()
-    except:
+    except IntegrityError:
+        await db.rollback()
         raise HTTPException(status_code=400, detail="Email or username already registered.")
     await db.refresh(new_user)
     return new_user
