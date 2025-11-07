@@ -3,7 +3,7 @@ services:
     container_name: runik-api
     build:
       context: .
-      dockerfile: DockerFile
+      dockerfile: Dockerfile
     depends_on:
       - db
     env_file:
