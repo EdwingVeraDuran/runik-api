@@ -11,8 +11,8 @@ class Config(BaseSettings):
     # Security config
     SECRET_KEY: str = Field(..., env="SECRET_KEY")
     ALGORITHM: str = Field(..., env="ALGORITHM")
-    ACCES_TOKEN_EXPIRE_MINUTES: int = Field(
-        default=60, env="ACCES_TOKEN_EXPIRE_MINUTES"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
+        default=60, env="ACCESS_TOKEN_EXPIRE_MINUTES"
     )
 
     # General app config
@@ -32,5 +32,6 @@ def get_config():
     return Config()
 
 
-# Global instance
-config = get_config()
+# Global instances (settings is the canonical name)
+settings = get_config()
+config = settings
